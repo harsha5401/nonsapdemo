@@ -42,7 +42,7 @@ stages:
           configuration: '$(buildConfiguration)'
       - task: PublishBuildArtifacts@1
         inputs:
-          pathToPublish: '$(Build.ArtifactStagingDirectory)/Package'
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
           artifactName: 'Package'
           publishLocation: 'Container'   
        # - task: CopyFilesOverSSH@0
