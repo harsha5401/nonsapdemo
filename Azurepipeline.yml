@@ -16,8 +16,8 @@ stages:
 - stage: Build
   displayName: Application Check Out and Build
   jobs:
-  - job: MavenBuild
-    displayName: Maven Build
+  - job: Build
+    displayName: Install .Net
     steps:
       # 1. Checkout repository with full history
       - checkout: self
@@ -40,7 +40,19 @@ stages:
           solution: '**/*.sln'
           msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:publishUrl=$(Build.ArtifactStagingDirectory)'
           configuration: '$(buildConfiguration)'
-
+       - task: PublishBuildArtifacts@1
+         inputs:
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/Package'
+          artifactName: 'Package'
+          publishLocation: 'Container'   
+       # - task: CopyFilesOverSSH@0
+       #   inputs:
+       #    sshEndpoint: 'sshsecond'  
+       #    sourceFolder: '$(Pipeline.Workspace)/Package'
+       #    contents: '**'  # it Keeps all files and subdirectories
+       #    targetFolder: 'C:/Users/harsha/sample_dotnetapp_ADOproject1-main'  # Target root directory
+       #    cleanTargetFolder: false
+       #    overwrite: true   
           
 #       - task: PowerShell@2
 #         inputs:
