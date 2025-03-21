@@ -1,0 +1,50 @@
+trigger:
+- none  # Adjust as needed
+ 
+variables:
+  buildConfiguration: 'Release'
+pool:
+    vmImage: 'windows-latest' 
+stages:
+- stage: Rollback
+  jobs:
+    - deployment: CopyFilesDeployment
+      displayName: "Copy Files on Windows Server"
+      environment:
+        name: windows  # Environment name in Azure DevOps
+        resourceName: harshawindowsVM  # Resource name for your Windows server
+        resourceType: virtualMachine  # Specify virtualMachine as the resource type
+        
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: PowerShell@2
+              displayName: "Copy files into date-based folder"
+              inputs:
+                targetType: 'inline'
+                script: |
+                  # Define Backup and Deployment Directories
+                    $BackupFolder = "C:\Users\harsha\ERMS"
+                    $DeploymentFolder = "C:\Users\harsha\sample_dotnetapp_ADOproject1-main"
+
+                    # Get the most recent backup folder
+                    $LatestBackupFolder = Get-ChildItem -Path $BackupFolder -Directory | 
+                                          Sort-Object -Property CreationTime -Descending | 
+                                          Select-Object -First 1
+
+                    if ($LatestBackupFolder) {
+                        # Full path to the latest backup folder
+                        $LatestBackupPath = $LatestBackupFolder.FullName
+
+                        # Check if deployment folder exists
+                        if (Test-Path -Path $DeploymentFolder) {
+                            # Copy files from backup to deployment folder
+                            Copy-Item -Path "$LatestBackupPath\*" -Destination $DeploymentFolder -Recurse -Force
+                            Write-Host "Rollback completed. Files restored from $LatestBackupPath to $DeploymentFolder."
+                        } else {
+                            Write-Host "Deployment folder does not exist. Rollback skipped."
+                        }
+                    } else {
+                        Write-Host "No backup folder found. Rollback cannot proceed."
+                    }
